@@ -172,7 +172,7 @@ head(filtered_reverse_reads)
 filtered_reads <- 
   filterAndTrim(forward_reads, filtered_forward_reads,
              reverse_reads, filtered_reverse_reads,
-              truncLen = c(280,270), trimLeft = c(46,55),
+              truncLen = c(290,280), trimLeft = c(19,22),
               maxN = 0, maxEE = c(1,1), truncQ = 2, 
               rm.phix = TRUE, compress = TRUE, 
               multithread = 10)
