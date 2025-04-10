@@ -113,6 +113,22 @@ kingdom_tree
 is.rooted(unrooted_tree) # should be TRUE
 ```
 
+
+# remove all eukaryota
+```{r remove-all eukaryo}
+prokaryote_physeq <- subset_taxa(unrooted_physeq, Kingdom != "Eukaryota")
+prokary_tree<-ggtree(prokaryote_physeq) + 
+  # color tips by kingdom
+  geom_tippoint(mapping = aes(color = Kingdom)) + 
+  # add a title
+  labs(title = "Unrooted Tree") + 
+  scale_color_manual(values = c("firebrick3", "cornflowerblue", "grey")) + 
+  # Move the legend to the bottom of the tree 
+  theme(legend.position = "bottom")
+
+prokary_tree
+```
+
 # 4. Long Branches? 
 <span style="color: red;">INTERPRETATION #1: Are there any suspect branches in the raw, unrooted tree? Or does your tree look “clean”? Why or why not?</span>
 Yes. There are very long branches that fall under Eukaryota.
@@ -147,9 +163,9 @@ viewClade(kingdom_node_tree +
 # Lets see its ancestors, which will tell us each node as it steps up. 
 # It's ideal to look a couple nodes up but not too far!
 tidytree::ancestor(unrooted_tree, 9911) # The input is the TREE, not phyloseq!!
-
+tidytree::ancestor(unrooted_tree, 9909)
 # Let's evaluate 3308!!
-viewClade(kingdom_node_tree, 9909) # even more zoomed out
+viewClade(kingdom_node_tree, 9903) # even more zoomed out
 ```
 
 ```{r pull-node703}
@@ -201,6 +217,68 @@ node_9909_df
 
 There are usual long branches marked in the tree as eukaryota. However, when I blasted the sequences. Blast results all indicate they are bacteria, with 100% idenity and 0 Evalue. Hence, I decided to keep them.
 
+
+
+## 4b. Prune your tree
+
+Note that our tree actually looks quite nice and we do not need to prune any ASVs out. 
+
+However, if you find in your own data set that you have ASVs that need to be removed here is the code for how to do that!
+
+```{r prune-ASVs, eval = FALSE}
+# Function from Joey McMurdie: https://github.com/joey711/phyloseq/issues/652
+pop_taxa = function(physeq, badTaxa){
+  allTaxa <-  taxa_names(physeq)
+  allTaxa <- allTaxa[!(allTaxa %in% badTaxa)]
+  return(prune_taxa(allTaxa, physeq))}
+
+# Let's use the pop_taxa function :) 
+# Recreate a phyloseq object without your unwanted ASV or node
+# Lets use the example ASVs above from node_3315_df
+unrooted_physeq_rm9909 <- 
+  unrooted_physeq %>%
+  pop_taxa(., node_9909_df$ASV)
+
+# Check it 
+unrooted_physeq_rm9909
+
+# Intuition Check: How many differ???
+ntaxa(unrooted_physeq) - ntaxa(unrooted_physeq_rm9909) 
+
+# Visually inspect 
+kingdom_tree_rm9909<-ggtree(unrooted_physeq_rm9909) + 
+  geom_tippoint(mapping = aes(color = Kingdom))
+
+kingdom_tree_rm9909
+```
+
+
+```{r kingdom-node-tree, fig.width=4.5, fig.height=7}
+kingdom_node_tree_rm9909 <- 
+  kingdom_tree_rm9909 + 
+  # Add the node label 
+  geom_text(aes(label=node), hjust= -0.5, vjust = -0.3, size = 1)
+
+# Plot the tree
+kingdom_node_tree_rm9909
+```
+
+```{r evaluate-long-branches}
+# View a specific clade
+# Zoom in on node that looks potentially suspicious
+viewClade(kingdom_node_tree + 
+          labs(title = "Kingdom Tree: Node 9911"), 
+          node = 3256)
+
+# This plot is too zoomed in! Let's try to zoom out by looking at ancestors
+# Lets see its ancestors, which will tell us each node as it steps up. 
+# It's ideal to look a couple nodes up but not too far!
+tidytree::ancestor(unrooted_tree, 9909) # The input is the TREE, not phyloseq!!
+
+# Let's evaluate 3308!!
+viewClade(kingdom_node_tree, 9907) # even more zoomed out
+```
+
 # 5. Root the Tree
 
 ## 5b. Midpoint Root 
@@ -208,11 +286,11 @@ There are usual long branches marked in the tree as eukaryota. However, when I b
 
 ```{r midpoint-root-tree-physeq}
 # Check to see if tree is rooted.. expect it to be false
-is.rooted(phy_tree(unrooted_physeq))
+is.rooted(phy_tree(prokaryote_physeq))
 
 # Let's midpoint root the tree
 midpoint_rooted_tree <- 
-  unrooted_physeq %>%
+  prokaryote_physeq %>%
   phy_tree() %>%
   phytools::midpoint.root()
 
