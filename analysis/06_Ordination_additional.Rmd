@@ -1,0 +1,198 @@
+---
+title: "06_Ordination_additional.Rmd"
+output: html_document
+date: "2025-04-30"
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.path = "../figures/06_Ordination/")
+```
+
+# Set up 
+
+## Timing of this script
+
+```{r rmd-start}
+# What time did we start running this script? 
+start_time <- Sys.time()
+```
+
+## Set the seed
+
+```{r set-seed}
+set.seed(238428)
+```
+
+## Load Packages, colors & functions  
+```{r load-packages}
+
+pacman::p_load(tidyverse, devtools, phyloseq, patchwork, vegan, 
+               install = FALSE)
+
+# Load Colors 
+source("code/colors.R")
+
+# Load functions 
+source("code/functions.R")
+```
+
+# 1. Load in the data 
+
+```{r load-data}
+# load phyloseq object
+load("data/04_PhylogeneticTree/phytree_preprocessed_physeqs.RData")
+midpoint_rooted_physeq
+
+# Intuition check on seq depth
+min(sample_sums(midpoint_rooted_physeq))
+
+metadata_df <- 
+  midpoint_rooted_physeq %>%
+  sample_data() %>%
+  data.frame()
+
+scaled_physeq <- 
+  midpoint_rooted_physeq %>%
+  scale_reads(round = "matround")
+
+sample_data(scaled_physeq)$collection.day.post.admission <- factor(
+  sample_data(scaled_physeq)$collection.day.post.admission,
+  levels = c("day-0", "day-3", "day-7", "day-14", "day-21", "day-28")
+)
+```
+
+```{r burn}
+#scaled_bray_dist <- phyloseq::distance(scaled_physeq, method = "bray", binary = FALSE)
+
+burn_physeq <- subset_samples(scaled_physeq, env_local_scale == "burn")
+
+# Recalculate Bray-Curtis PCoA on the subset
+burn_bray_pcoa <- ordinate(physeq = burn_physeq,
+                           method = "PCoA",
+                           distance = "bray", 
+                           binary = FALSE)
+
+# Plot the PCoA
+burn_bray_pcoa_plot <- 
+  plot_ordination(physeq = burn_physeq,
+                  ordination = burn_bray_pcoa,
+                  color = "collection.day.post.admission",
+                  shape = "env_local_scale",
+                  title = "Bray-Curtis PCoA (Burn only)") + 
+  scale_color_manual(values = colors) + 
+  scale_shape_manual(values = c(15)) +  # Only one shape needed
+  geom_point(size = 5, alpha = 0.5, aes(color = `collection.day.post.admission`)) + 
+  theme_bw() + 
+  theme(legend.position = "right")
+
+burn_bray_pcoa_plot
+```
+
+
+```{r spared}
+#scaled_bray_dist <- phyloseq::distance(scaled_physeq, method = "bray", binary = FALSE)
+
+spared_physeq <- subset_samples(scaled_physeq, env_local_scale == "spared")
+
+# Recalculate Bray-Curtis PCoA on the subset
+spared_bray_pcoa <- ordinate(physeq = spared_physeq,
+                           method = "PCoA",
+                           distance = "bray", 
+                           binary = FALSE)
+
+# Plot the PCoA
+spared_bray_pcoa_plot <- 
+  plot_ordination(physeq = spared_physeq,
+                  ordination = spared_bray_pcoa,
+                  color = "collection.day.post.admission",
+                  shape = "env_local_scale",
+                  title = "Bray-Curtis PCoA (Burn only)") + 
+  scale_color_manual(values = colors) + 
+  scale_shape_manual(values = c(16)) +  # Only one shape needed
+  geom_point(size = 5, alpha = 0.5, aes(color = `collection.day.post.admission`)) + 
+  theme_bw() + 
+  theme(legend.position = "right")
+
+spared_bray_pcoa_plot
+```
+
+```{r rectal}
+#scaled_bray_dist <- phyloseq::distance(scaled_physeq, method = "bray", binary = FALSE)
+
+rectal_physeq <- subset_samples(scaled_physeq, env_local_scale == "rectal")
+
+# Recalculate Bray-Curtis PCoA on the subset
+rectal_bray_pcoa <- ordinate(physeq = rectal_physeq,
+                           method = "PCoA",
+                           distance = "bray", 
+                           binary = FALSE)
+
+# Plot the PCoA
+rectal_bray_pcoa_plot <- 
+  plot_ordination(physeq = rectal_physeq,
+                  ordination = rectal_bray_pcoa,
+                  color = "collection.day.post.admission",
+                  shape = "env_local_scale",
+                  title = "Bray-Curtis PCoA (Burn only)") + 
+  scale_color_manual(values = colors) + 
+  scale_shape_manual(values = c(17)) +  # Only one shape needed
+  geom_point(size = 5, alpha = 0.5, aes(color = `collection.day.post.admission`)) + 
+  theme_bw() + 
+  theme(legend.position = "right")
+
+rectal_bray_pcoa_plot
+```
+
+
+```{r perianal}
+#scaled_bray_dist <- phyloseq::distance(scaled_physeq, method = "bray", binary = FALSE)
+
+perianal_physeq <- subset_samples(scaled_physeq, env_local_scale == "rectal")
+
+# Recalculate Bray-Curtis PCoA on the subset
+perianal_bray_pcoa <- ordinate(physeq = perianal_physeq,
+                           method = "PCoA",
+                           distance = "bray", 
+                           binary = FALSE)
+
+# Plot the PCoA
+perianal_bray_pcoa_plot <- 
+  plot_ordination(physeq =perianal_physeq,
+                  ordination = perianal_bray_pcoa,
+                  color = "collection.day.post.admission",
+                  shape = "env_local_scale",
+                  title = "Bray-Curtis PCoA (Burn only)") + 
+  scale_color_manual(values = colors) + 
+  scale_shape_manual(values = c(18)) +  # Only one shape needed
+  geom_point(size = 5, alpha = 0.5, aes(color = `collection.day.post.admission`)) + 
+  theme_bw() + 
+  theme(legend.position = "right")
+
+perianal_bray_pcoa_plot
+```
+
+
+# Final info for Reproducibility 
+
+## Check Render Time
+```{r stop-time}
+# Take the time now that we are at the end of the script
+end_time <- Sys.time()
+end_time 
+
+# Echo the elapsed time
+elapsed_time <- round((end_time - start_time), 3)
+elapsed_time
+```
+
+## Session Information
+
+```{r session-info}
+# Ensure reproducibility with package version information
+devtools::session_info()
+```
+
