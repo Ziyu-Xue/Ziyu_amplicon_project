@@ -151,7 +151,7 @@ rectal_bray_pcoa_plot
 ```{r perianal}
 #scaled_bray_dist <- phyloseq::distance(scaled_physeq, method = "bray", binary = FALSE)
 
-perianal_physeq <- subset_samples(scaled_physeq, env_local_scale == "rectal")
+perianal_physeq <- subset_samples(scaled_physeq, env_local_scale == "perianal")
 
 # Recalculate Bray-Curtis PCoA on the subset
 perianal_bray_pcoa <- ordinate(physeq = perianal_physeq,
@@ -175,7 +175,53 @@ perianal_bray_pcoa_plot <-
 perianal_bray_pcoa_plot
 ```
 
+```{r burn-permanova}
+burn_physeq <- subset_samples(scaled_physeq, env_local_scale == "burn")
+burn_scaled_bray_dist <- phyloseq::distance(burn_physeq, method = "bray", binary = FALSE)
+burn_meta <- as(sample_data(burn_physeq), "data.frame")
+burn_bray_station_adonis_terms1 <- adonis2(
+  burn_scaled_bray_dist ~ collection.day.post.admission,
+  data = burn_meta,
+  by = "terms")
+burn_bray_station_adonis_terms1
+```
 
+
+```{r spared-permanova}
+spared_physeq <- subset_samples(scaled_physeq, env_local_scale == "spared")
+spared_scaled_bray_dist <- phyloseq::distance(spared_physeq, method = "bray", binary = FALSE)
+spared_meta <- as(sample_data(spared_physeq), "data.frame")
+spared_bray_station_adonis_terms1 <- adonis2(
+  spared_scaled_bray_dist ~ collection.day.post.admission,
+  data = spared_meta,
+  by = "terms")
+spared_bray_station_adonis_terms1
+```
+
+
+
+```{r rectal-permanova}
+rectal_physeq <- subset_samples(scaled_physeq, env_local_scale == "rectal")
+rectal_scaled_bray_dist <- phyloseq::distance(rectal_physeq, method = "bray", binary = FALSE)
+rectal_meta <- as(sample_data(rectal_physeq), "data.frame")
+rectal_bray_station_adonis_terms1 <- adonis2(
+  rectal_scaled_bray_dist ~ collection.day.post.admission,
+  data = rectal_meta,
+  by = "terms")
+rectal_bray_station_adonis_terms1
+```
+
+
+```{r perianal-permanova}
+perianal_physeq <- subset_samples(scaled_physeq, env_local_scale == "perianal")
+perianal_scaled_bray_dist <- phyloseq::distance(perianal_physeq, method = "bray", binary = FALSE)
+perianal_meta <- as(sample_data(perianal_physeq), "data.frame")
+perianal_bray_station_adonis_terms1 <- adonis2(
+  perianal_scaled_bray_dist ~ collection.day.post.admission,
+  data = perianal_meta,
+  by = "terms")
+perianal_bray_station_adonis_terms1
+```
 # Final info for Reproducibility 
 
 ## Check Render Time
