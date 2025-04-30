@@ -1,0 +1,387 @@
+---
+title: "07_Composition_additional"
+output: html_document
+date: "2025-04-30"
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE,
+                      fig.path = "../figures/07_Composition/")
+```
+
+# perform same analysis, but starting with top 10 phyla in just skin samples
+
+# Setup 
+
+## Load Packages 
+```{r load-packages}
+# Load in the packages 
+pacman::p_load(tidyverse, devtools, DT, phyloseq, patchwork, 
+               install = FALSE)
+
+# load colors
+source("code/colors.R")
+```
+
+
+```{r load-data}
+load("data/06_Ordination/scaled_physeq.RData")
+
+# Look at the data 
+scaled_physeq
+
+# Intuition check - scaled at 1,942
+min(sample_sums(scaled_physeq))
+range(sample_sums(scaled_physeq))
+```
+
+
+# Taxonomic Analysis! 
+## A. Phylum 
+```{r calc-phylum-df}
+# Create a phylum level dataframe
+phylum_df <- 
+  scaled_physeq %>%
+  # Agglomerate all ASV counts within a phylum
+  tax_glom(taxrank = "Phylum") %>%
+  # Calculate the relative abundance! 
+  transform_sample_counts(function(x) {x/sum(x)}) %>%
+  # Create a dataframe from phyloseq object
+  psmelt() %>%
+  # Filter out Phyla < 1 % 
+  #dplyr::filter(Abundance > 0.01) %>%
+  # fix the order of date
+    mutate(`collection.day.post.admission` = fct_relevel(`collection.day.post.admission`, c("day-0", "day-3", "day-7","day-14","day-21","day-28")),
+         # Fix the station order 
+         `env_local_scale` = fct_relevel(`env_local_scale`, c("burn", "spared",
+                                          "rectal", "perianal")))
+
+skin_phylum_df <- 
+  phylum_df %>%
+  dplyr::filter(env_local_scale %in% c("burn", "spared"))
+
+## What are the phylum abundances? 
+skin_phylum_df %>%
+  group_by(Phylum) %>%
+  summarize(mean_PercAbund = round(mean(Abundance), digits = 4)) %>%
+  arrange(-mean_PercAbund) %>%
+  datatable()
+
+
+# Make a list of phyla the top phyla 
+top10_phyla <- 
+  skin_phylum_df %>%
+  group_by(Phylum) %>%
+  summarize(mean_PercAbund = mean(Abundance)) %>%
+  arrange(-mean_PercAbund) %>%
+  head(n = 10) %>%
+  pull(Phylum)
+
+top10_phyla
+```
+
+```{r}
+combined_plot<-
+skin_phylum_df %>%
+  dplyr::filter(Phylum %in% top10_phyla) %>%
+  ggplot(aes(x =  `env_local_scale`, y = Abundance, fill = Phylum, color = Phylum)) + 
+  facet_grid(Phylum~`collection.day.post.admission`, scale = "free") + 
+  # add the stacked bar 
+  geom_jitter() +
+  geom_boxplot(outlier.shape = NA, alpha = 0.5) + 
+  # change the colors to be our selected colors 
+  scale_fill_manual(values = phylum_colors) + 
+  scale_color_manual(values = phylum_colors) + 
+  theme_bw() + 
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
+        axis.text.y = element_text(size = 8), 
+  strip.text = element_text(size = 5),                                    
+  axis.title = element_text(size = 9),                                    
+  plot.title = element_text(size = 10)   )
+combined_plot
+```
+
+```{r phylum-Actinomycetota, fig.width=7, fig.height=3.5}
+# Narrow in on a specific group
+# Actinomycetota - y: abundance, x: collection site, dot plot + boxplot
+Actinomycetota_phylum_site <- 
+  skin_phylum_df %>%
+  dplyr::filter(Phylum == "Actinomycetota",`collection.day.post.admission`=="day-0") %>%
+  # build the plot 
+  ggplot(aes(x =  `env_local_scale`, y = Abundance, fill = `env_local_scale`, color = `env_local_scale`))  + 
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) + # outliers not plotted here in boxplot 
+  geom_jitter() + 
+  theme_bw() + 
+  labs(title = "Actinomycetota - day0") + 
+  scale_color_manual(values = colors) + 
+  scale_fill_manual(values = colors) + 
+    theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
+          legend.position = "right")
+
+
+# Actinomycetota - y: abundance, x: collection day, dot plot + boxplot
+Actinomycetota_phylum_day <- 
+  skin_phylum_df %>%
+  dplyr::filter(Phylum == "Actinomycetota", env_local_scale=="burn") %>%
+  # build the plot 
+  ggplot(aes(x =  `collection.day.post.admission`, y = Abundance, fill = `collection.day.post.admission`, color = `collection.day.post.admission`))  + 
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) + # outliers not plotted here in boxplot 
+  geom_jitter() + 
+  theme_bw() + 
+  labs(title = "Actinomycetota - burn") + 
+  scale_color_manual(values = colors) + 
+  scale_fill_manual(values = colors) + 
+    theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
+           legend.position = "none")
+ 
+
+Actinomycetota_phylum_day_s <- 
+  skin_phylum_df %>%
+  dplyr::filter(Phylum == "Actinomycetota", env_local_scale=="spared") %>%
+  # build the plot 
+  ggplot(aes(x =  `collection.day.post.admission`, y = Abundance, fill = `collection.day.post.admission`, color = `collection.day.post.admission`))  + 
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) + # outliers not plotted here in boxplot 
+  geom_jitter() + 
+  theme_bw() + 
+  labs(title = "Actinomycetota - spared") + 
+  scale_color_manual(values = colors) + 
+  scale_fill_manual(values = colors) + 
+    theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
+          legend.position = "right")
+
+Actinomycetota_phylum_site + Actinomycetota_phylum_day + Actinomycetota_phylum_day_s
+ 
+```
+
+
+```{r phylum-bacill, fig.width=7, fig.height=3.5}
+# Narrow in on a specific group
+# Actinomycetota - y: abundance, x: collection site, dot plot + boxplot
+bacillota_phylum_site <- 
+  skin_phylum_df %>%
+  dplyr::filter(Phylum == "Bacillota",`collection.day.post.admission`=="day-0") %>%
+  # build the plot 
+  ggplot(aes(x =  `env_local_scale`, y = Abundance, fill = `env_local_scale`, color = `env_local_scale`))  + 
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) + # outliers not plotted here in boxplot 
+  geom_jitter() + 
+  theme_bw() + 
+  labs(title = "Bacillota - day0") + 
+  scale_color_manual(values = colors) + 
+  scale_fill_manual(values = colors) + 
+    theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
+          legend.position = "right")
+# Statistically: Kruskall-Wallis followed by a Tukey's Posthoc test
+# These are non-parametric (non-normal) stat tests 
+
+# Actinomycetota - y: abundance, x: collection day, dot plot + boxplot
+bacillota_phylum_day <- 
+  skin_phylum_df %>%
+  dplyr::filter(Phylum == "Bacillota", env_local_scale=="burn") %>%
+  # build the plot 
+  ggplot(aes(x =  `collection.day.post.admission`, y = Abundance, fill = `collection.day.post.admission`, color = `collection.day.post.admission`))  + 
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) + # outliers not plotted here in boxplot 
+  geom_jitter() + 
+  theme_bw() + 
+  labs(title = "Bacillota - burn") + 
+  scale_color_manual(values = colors) + 
+  scale_fill_manual(values = colors) + 
+    theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
+           legend.position = "none")
+ 
+
+bacillota_phylum_day_s <- 
+  skin_phylum_df %>%
+  dplyr::filter(Phylum == "Bacillota", env_local_scale=="spared") %>%
+  # build the plot 
+  ggplot(aes(x =  `collection.day.post.admission`, y = Abundance, fill = `collection.day.post.admission`, color = `collection.day.post.admission`))  + 
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) + # outliers not plotted here in boxplot 
+  geom_jitter() + 
+  theme_bw() + 
+  labs(title = "Bacillota - spared") + 
+  scale_color_manual(values = colors) + 
+  scale_fill_manual(values = colors) + 
+    theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
+          legend.position = "right")
+
+bacillota_phylum_site + bacillota_phylum_day + bacillota_phylum_day_s
+#  plot_layout(guides = "collect") +
+#  plot_annotation(tag_levels = "A")
+```
+
+
+## B. Genus
+
+```{r genus, fig.width=12, fig.height=4}
+# Calculate the Family relative abundance 
+# Note: The read depth MUST be normalized in some way: scale_reads
+genus_df <- 
+  scaled_physeq %>%
+  # agglomerate at the phylum level 
+  tax_glom(taxrank = "Genus") %>% 
+  # Transform counts to relative abundance 
+  transform_sample_counts(function (x) {x/sum(x)}) %>%
+  # Melt to a long format 
+  psmelt() %>%
+  # Fix the order of date
+  mutate(`collection.day.post.admission` = fct_relevel(`collection.day.post.admission`, c("day-0", "day-3", "day-7","day-14","day-21","day-28")),
+         # Fix the station order 
+         `env_local_scale` = fct_relevel(`env_local_scale`, c("burn", "spared",
+                                          "rectal", "perianal")))
+
+skin_genus_df <- 
+  genus_df %>%
+  dplyr::filter(env_local_scale %in% c("burn", "spared"))
+
+
+```
+
+### B1. Actinomycetota Genera 
+
+```{r actino-genus}
+actino_genus_df<-
+  skin_genus_df%>%
+  dplyr::filter(Phylum =="Actinomycetota")
+
+actino_genus_df %>%
+  group_by(Genus) %>%
+  summarize(mean_PercAbund = round(mean(Abundance), digits = 4)) %>%
+  arrange(-mean_PercAbund) %>%
+  datatable()
+top10_actino_genera <- 
+  actino_genus_df %>%
+  group_by(Genus) %>%
+  summarize(mean_PercAbund = mean(Abundance)) %>%
+  arrange(-mean_PercAbund) %>%
+  head(n = 10) %>%
+  pull(Genus)
+
+top10_actino_genera
+
+actino_genus_10<-
+  actino_genus_df %>%
+  dplyr::filter(Genus %in% top10_actino_genera)%>%
+  ggplot(aes(x =  `env_local_scale`, y = Abundance, fill = Genus, color = Genus)) + 
+  facet_grid(Genus~`collection.day.post.admission`, scale = "free") + 
+  # add the stacked bar 
+  geom_jitter() +
+  geom_boxplot(outlier.shape = NA, alpha = 0.5) + 
+  # change the colors to be our selected colors 
+  #scale_fill_manual(values = phylum_colors) + 
+  #scale_color_manual(values = phylum_colors) + 
+  theme_bw() + 
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1))
+  
+actino_genus_10
+
+```
+
+
+### B2. Bacillota Genera 
+
+```{r bacill-geuns}
+Bacillota_genus_df<-
+  skin_genus_df%>%
+  dplyr::filter(Phylum =="Bacillota")
+Bacillota_genus_df %>%
+  group_by(Genus) %>%
+  summarize(mean_PercAbund = round(mean(Abundance), digits = 4)) %>%
+  arrange(-mean_PercAbund) %>%
+  datatable()
+top10_Bacillota_genera <- 
+ Bacillota_genus_df %>%
+  group_by(Genus) %>%
+  summarize(mean_PercAbund = mean(Abundance)) %>%
+  arrange(-mean_PercAbund) %>%
+  head(n = 10) %>%
+  pull(Genus)
+
+
+
+Bacillota_genus_10<-
+  Bacillota_genus_df %>%
+  dplyr::filter(Genus %in% top10_Bacillota_genera)%>%
+  ggplot(aes(x =  `env_local_scale`, y = Abundance, fill = Genus, color = Genus)) + 
+  facet_grid(Genus~`collection.day.post.admission`, scale = "free") + 
+  # add the stacked bar 
+  geom_jitter() +
+  geom_boxplot(outlier.shape = NA, alpha = 0.5) + 
+  # change the colors to be our selected colors 
+  #scale_fill_manual(values = phylum_colors) + 
+  #scale_color_manual(values = phylum_colors) + 
+  theme_bw() + 
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1))
+  
+Bacillota_genus_10
+
+```
+
+
+```{r baci-genus-plot, fig.width=6, fig.height=6}
+
+# Plot genus 
+Bacillota_genus_site <- 
+  Bacillota_genus_df %>%
+  dplyr::filter(`collection.day.post.admission`=="day-0") %>%
+  # build the plot 
+  # At first, plot all of the genera and then subset the ones that have intersting trends
+  dplyr::filter(Genus %in% c("Staphylococcus","Streptococcus")) %>%
+  # build the plot 
+  ggplot(aes(x =  `env_local_scale`, y = Abundance, fill = `env_local_scale`, color = `env_local_scale`)) + 
+  facet_wrap(.~Genus, scales = "free_y", nrow = 1) + 
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) + # outliers not plotted here in boxplot 
+  geom_jitter() + 
+  theme_bw() + 
+  labs(title = "Bacillota Genera - day0") + 
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
+        legend.position = "none")
+
+
+
+Bacillota_genus_day <- 
+  Bacillota_genus_df %>%
+  dplyr::filter(env_local_scale=="burn") %>%
+  dplyr::filter(Genus %in% c("Staphylococcus","Streptococcus")) %>%
+  # build the plot 
+  ggplot(aes(x =  `collection.day.post.admission`, y = Abundance, fill = `collection.day.post.admission`, color = `collection.day.post.admission`))  + 
+  facet_wrap(.~Genus, scales = "free_y", nrow = 1) + 
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) + # outliers not plotted here in boxplot 
+  geom_jitter() + 
+  theme_bw() + 
+  labs(title = "Bacillota - burn") + 
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
+        legend.position = "none")
+
+Bacillota_genus_day_s <- 
+  Bacillota_genus_df %>%
+  dplyr::filter(env_local_scale=="spared") %>%
+  dplyr::filter(Genus %in% c("Staphylococcus","Streptococcus")) %>%
+  # build the plot 
+  ggplot(aes(x =  `collection.day.post.admission`, y = Abundance, fill = `collection.day.post.admission`, color = `collection.day.post.admission`))  + 
+  facet_wrap(.~Genus, scales = "free_y", nrow = 1) + 
+  geom_boxplot(alpha = 0.5, outlier.shape = NA) + # outliers not plotted here in boxplot 
+  geom_jitter() + 
+  theme_bw() + 
+  labs(title = "Bacillota - spared") + 
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
+        legend.position = "none")
+
+# Collect the Actinomycetota Plots
+Bacillota_genus_site / Bacillota_genus_day + Bacillota_genus_day_s
+ # plot_layout(guides = "collect") +
+ # plot_annotation(tag_levels = "A")
+```
+
+
+# Session Information 
+For reproducibility 
+```{r session_info}
+devtools::session_info()
+```
+
+
