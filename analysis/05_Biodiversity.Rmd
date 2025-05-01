@@ -95,6 +95,11 @@ str(iNEXT_data)
 typeof(iNEXT_data)
 ```
 
+```{r save-inext}
+save(iNEXT_data, 
+     file = "data/05_Biodiversity/iNEXT_data.RData")
+```
+
 # Rarefaction Curves 
 
 ## `ggiNEXT` Rarefaction Curves 
