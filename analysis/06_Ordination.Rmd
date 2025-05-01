@@ -65,7 +65,7 @@ start_time <- Sys.time()
 ## Set the seed
 
 ```{r set-seed}
-set.seed(238428)
+set.seed(20020718)
 ```
 
 ## Load Packages, colors & functions  
@@ -306,14 +306,14 @@ Finally, ~74% of the variation remains unexplained by these variables, which is 
 
 ```{r betadisper-sorensen}
 # Homogeneity of Disperson test with beta dispr
-# Sorensen Betadisper - Station 
-dispr_sorensen_station <- betadisper(scaled_sorensen_dist, metadata_df$`collection.day.post.admission`)
+# Sorensen Betadisper - collection day
+dispr_sorensen_day <- betadisper(scaled_sorensen_dist, metadata_df$`collection.day.post.admission`)
 # permutest() performs a non-parametric permutation test, which is robust and valid for the kind of data used in beta diversity analysis (e.g., dissimilarity matrices).
-permutest(dispr_sorensen_station)
+permutest(dispr_sorensen_day)
 
-# Sorensen Betadisper - Date  
-dispr_sorensen_date <- betadisper(scaled_sorensen_dist, metadata_df$`env_local_scale`)
-permutest(dispr_sorensen_date)
+# Sorensen Betadisper - site  
+dispr_sorensen_site <- betadisper(scaled_sorensen_dist, metadata_df$`env_local_scale`)
+permutest(dispr_sorensen_site)
 
 ```
 
