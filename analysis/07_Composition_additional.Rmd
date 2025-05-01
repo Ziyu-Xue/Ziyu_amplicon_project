@@ -160,7 +160,7 @@ Actinomycetota_phylum_site + Actinomycetota_phylum_day + Actinomycetota_phylum_d
 
 ```{r phylum-bacill, fig.width=7, fig.height=3.5}
 # Narrow in on a specific group
-# Actinomycetota - y: abundance, x: collection site, dot plot + boxplot
+#  - y: abundance, x: collection site, dot plot + boxplot
 bacillota_phylum_site <- 
   skin_phylum_df %>%
   dplyr::filter(Phylum == "Bacillota",`collection.day.post.admission`=="day-0") %>%
@@ -174,10 +174,9 @@ bacillota_phylum_site <-
   scale_fill_manual(values = colors) + 
     theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
           legend.position = "right")
-# Statistically: Kruskall-Wallis followed by a Tukey's Posthoc test
-# These are non-parametric (non-normal) stat tests 
 
-# Actinomycetota - y: abundance, x: collection day, dot plot + boxplot
+
+# - y: abundance, x: collection day, dot plot + boxplot
 bacillota_phylum_day <- 
   skin_phylum_df %>%
   dplyr::filter(Phylum == "Bacillota", env_local_scale=="burn") %>%
@@ -208,8 +207,7 @@ bacillota_phylum_day_s <-
           legend.position = "right")
 
 bacillota_phylum_site + bacillota_phylum_day + bacillota_phylum_day_s
-#  plot_layout(guides = "collect") +
-#  plot_annotation(tag_levels = "A")
+
 ```
 
 
