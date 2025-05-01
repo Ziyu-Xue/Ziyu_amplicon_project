@@ -65,8 +65,9 @@ sample_data(scaled_physeq)$collection.day.post.admission <- factor(
 )
 ```
 
+# 2. plot Bray-Curtis PCoA for each site
 ```{r burn}
-#scaled_bray_dist <- phyloseq::distance(scaled_physeq, method = "bray", binary = FALSE)
+
 
 burn_physeq <- subset_samples(scaled_physeq, env_local_scale == "burn")
 
@@ -94,7 +95,7 @@ burn_bray_pcoa_plot
 
 
 ```{r spared}
-#scaled_bray_dist <- phyloseq::distance(scaled_physeq, method = "bray", binary = FALSE)
+
 
 spared_physeq <- subset_samples(scaled_physeq, env_local_scale == "spared")
 
@@ -121,7 +122,7 @@ spared_bray_pcoa_plot
 ```
 
 ```{r rectal}
-#scaled_bray_dist <- phyloseq::distance(scaled_physeq, method = "bray", binary = FALSE)
+
 
 rectal_physeq <- subset_samples(scaled_physeq, env_local_scale == "rectal")
 
@@ -149,7 +150,7 @@ rectal_bray_pcoa_plot
 
 
 ```{r perianal}
-#scaled_bray_dist <- phyloseq::distance(scaled_physeq, method = "bray", binary = FALSE)
+
 
 perianal_physeq <- subset_samples(scaled_physeq, env_local_scale == "perianal")
 
@@ -174,6 +175,8 @@ perianal_bray_pcoa_plot <-
 
 perianal_bray_pcoa_plot
 ```
+
+# 3. statistical tests for each site
 
 ```{r burn-permanova}
 burn_physeq <- subset_samples(scaled_physeq, env_local_scale == "burn")
