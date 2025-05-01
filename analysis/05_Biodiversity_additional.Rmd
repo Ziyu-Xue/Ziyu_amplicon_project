@@ -20,7 +20,7 @@ start_time <- Sys.time()
 
 ## Set the seed 
 ```{r set-seed}
-set.seed(238428)
+set.seed(20020718)
 ```
 
 ## Load Packages & Colors 
@@ -76,7 +76,7 @@ obs_div_df <-
   iNEXT_manual_df %>%
   dplyr::filter(Method == "Observed") 
 
-# Plot boxplots by station against diversity
+# Plot boxplots by collection site against diversity
 day_0_diversity<-
   obs_div_df %>%
   dplyr::filter(`collection.day.post.admission`=="day-0") %>%
@@ -99,7 +99,7 @@ day_0_diversity
 
 ### Simpson
 
-```{r station-diversity-simpson-burn, fig.height=4, fig.width=4}
+```{r day-diversity-simpson-burn, fig.height=4, fig.width=4}
 # Pull out simpson data 
 obs_simps_df <- 
   obs_div_df %>%
@@ -107,18 +107,18 @@ obs_simps_df <-
   mutate(`collection.day.post.admission` = fct_relevel(`collection.day.post.admission`, c("day-0", "day-3", "day-7","day-14","day-21","day-28")))
 
 # Calculate the ANOVA since the data is normal. :) 
-anova_station_simps <- 
+anova_day_simps <- 
   aov(qD ~ `collection.day.post.admission`, data = obs_simps_df)
 
 # Look at it 
-anova_station_simps
-summary(anova_station_simps)
+anova_day_simps
+summary(anova_day_simps)
 
 burn_obs_simp_df<-
   obs_simps_df%>%
   dplyr::filter(env_local_scale=="burn")
 
-# Simpson by station 
+# Simpson by collection day
 burn_simps_ggboxplot <- 
   ggboxplot(burn_obs_simp_df, x = "collection.day.post.admission", y = "qD", 
           color = "collection.day.post.admission", fill = "collection.day.post.admission", alpha = 0.3,
@@ -144,13 +144,13 @@ burn_simps_ggboxplot <-
 burn_simps_ggboxplot
 ```
 
-```{r station-diversity-simpson-spared, fig.height=4, fig.width=4}
+```{r day-diversity-simpson-spared, fig.height=4, fig.width=4}
 spared_obs_simp_df<-
   obs_simps_df%>%
   dplyr::filter(env_local_scale=="spared")%>%
   mutate(`collection.day.post.admission` = fct_relevel(`collection.day.post.admission`, c("day-0", "day-3", "day-7","day-14","day-21","day-28")))
 
-# Simpson by station 
+# Simpson by day 
 spared_simps_ggboxplot <- 
   ggboxplot(spared_obs_simp_df, x = "collection.day.post.admission", y = "qD", 
           color = "collection.day.post.admission", fill = "collection.day.post.admission", alpha = 0.3,
@@ -178,7 +178,7 @@ spared_simps_ggboxplot
 
 ###richness
 
-```{r station-diversity-richness-burn, fig.height=4, fig.width=4}
+```{r day-diversity-richness-burn, fig.height=4, fig.width=4}
 # Pull out richness data 
 obs_rich_df <- 
   obs_div_df %>%
@@ -193,7 +193,7 @@ burn_obs_rich_df<-
   obs_rich_df%>%
   dplyr::filter(env_local_scale=="burn")
 
-# Richness by station 
+# Richness by day
 burn_rich_ggboxplot <- 
   ggboxplot(burn_obs_rich_df, x = "collection.day.post.admission", y = "qD", 
           color = "collection.day.post.admission", fill = "collection.day.post.admission", alpha = 0.3,
@@ -220,14 +220,14 @@ burn_rich_ggboxplot
 ```
 
 
-```{r station-diversity-richness-spared, fig.height=4, fig.width=4}
+```{r day-diversity-richness-spared, fig.height=4, fig.width=4}
 
 spared_obs_rich_df<-
   obs_rich_df%>%
   dplyr::filter(env_local_scale=="spared")%>%
   mutate(`collection.day.post.admission` = fct_relevel(`collection.day.post.admission`, c("day-0", "day-3", "day-7","day-14","day-21","day-28")))
 
-# Richness by station 
+# Richness by day 
 spared_rich_ggboxplot <- 
   ggboxplot(spared_obs_rich_df, x = "collection.day.post.admission", y = "qD", 
           color = "collection.day.post.admission", fill = "collection.day.post.admission", alpha = 0.3,
@@ -254,7 +254,7 @@ spared_rich_ggboxplot
 ```
 
 ### shannon
-```{r shannon}
+```{r day-diversity-shannon}
 obs_shan_df <- 
   obs_div_df %>%
   dplyr::filter(Order.q == 1)%>%
@@ -281,7 +281,7 @@ perianal_obs_shan_df<-
   dplyr::filter(env_local_scale=="perianal")
 ```
 
-```{r shannon-burn}
+```{r day-diversity-shannon-burn}
 burn_shan_ggboxplot <- 
   ggboxplot(burn_obs_shan_df, x = "collection.day.post.admission", y = "qD", 
           color = "collection.day.post.admission", fill = "collection.day.post.admission", alpha = 0.3,
@@ -306,7 +306,7 @@ burn_shan_ggboxplot <-
 burn_shan_ggboxplot
 ```
 
-```{r shannon-spared}
+```{r day-diversity-shannon-spared}
 spared_shan_ggboxplot <- 
   ggboxplot(spared_obs_shan_df, x = "collection.day.post.admission", y = "qD", 
           color = "collection.day.post.admission", fill = "collection.day.post.admission", alpha = 0.3,
@@ -332,7 +332,7 @@ spared_shan_ggboxplot
 ```
 
 ### gut shannon
-```{r shan-rectal}
+```{r day-diversity-shannon-rectal}
 
 
 rectal_shan_ggboxplot <- 
@@ -359,7 +359,7 @@ rectal_shan_ggboxplot <-
 rectal_shan_ggboxplot
 ```
 
-```{r shannon-perianal}
+```{r day-diversity-shannon-perianal}
 perianal_shan_ggboxplot <- 
   ggboxplot(perianal_obs_shan_df, x = "collection.day.post.admission", y = "qD", 
           color = "collection.day.post.admission", fill = "collection.day.post.admission", alpha = 0.3,
