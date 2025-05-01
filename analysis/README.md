@@ -1,0 +1,1 @@
+This folder contains RMarkdown files used to analyze the data and the rendered html files. For 05_biodiversity, 06_ordination, and 07_composition, R codes used to produce figures in the presentation are in the *_additional files.
