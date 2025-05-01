@@ -77,8 +77,7 @@ phylum_df <-
   transform_sample_counts(function(x) {x/sum(x)}) %>%
   # Create a dataframe from phyloseq object
   psmelt() %>%
-  # Filter out Phyla < 1 % 
-  #dplyr::filter(Abundance > 0.01) %>%
+
   # fix the order of date
     mutate(`collection.day.post.admission` = fct_relevel(`collection.day.post.admission`, c("day-0", "day-3", "day-7","day-14","day-21","day-28")),
          # Fix the station order 
@@ -122,10 +121,6 @@ Therefore, we will also explore faceted and jittered boxplots below the bar plot
 stacked_bar_plot<-
 phylum_df %>%
   dplyr::filter(Phylum %in% top10_phyla) %>%
-  # Warning: It's important to have one sample per x value, 
-  # otherwise, it will take the sum between multiple samples
-  #dplyr::filter(depth == 0.0) %>%
-  #dplyr::filter(fraction == "Whole") %>%
   ggplot(aes(x = `collection.day.post.admission`, y = Abundance, fill = Phylum)) + 
   facet_grid(.~`env_local_scale`) + 
   geom_bar(stat = "identity", color = "black") + 
@@ -147,11 +142,6 @@ To help compare the phylum abundance between sample types, we can facet by phylu
 facet_bar_plot<-
 phylum_df %>%
   dplyr::filter(Phylum %in% top10_phyla) %>%
-  # Individual sample comparison of surface waters, whole fraction 
-  # This will allow us to look at individual samples! 
-  # Note that whenever plotting stacked bar plots, you should always look at Individual samples! 
-  #dplyr::filter(depth == 0.0) %>%
-  #dplyr::filter(fraction == "Whole") %>%
   ggplot(aes(x = `env_local_scale`, y = Abundance, fill = Phylum)) + 
   facet_grid(Phylum~`collection.day.post.admission`, scale = "free") + 
   # add the stacked bar 
@@ -206,8 +196,6 @@ actino_phylum_site <-
   scale_fill_manual(values = colors) + 
     theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
           legend.position = "right")
-# Statistically: Kruskall-Wallis followed by a Tukey's Posthoc test
-# These are non-parametric (non-normal) stat tests 
 
 # Actinomycetota - y: abundance, x: collection day, dot plot + boxplot
 actino_phylum_day <- 
@@ -223,8 +211,7 @@ actino_phylum_day <-
   scale_fill_manual(values = colors) + 
     theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
           legend.position = "right")
-# Statistically: Kruskall-Wallis followed by a Tukey's Posthoc test
-# These are non-parametric (non-normal) stat tests 
+
 
 
 actino_phylum_site + actino_phylum_day + 
@@ -236,7 +223,7 @@ actino_phylum_site + actino_phylum_day +
 
 ```{r phylum-bacill, fig.width=7, fig.height=3.5}
 # Narrow in on a specific group
-# Actinomycetota - y: abundance, x: collection site, dot plot + boxplot
+# Bacillota - y: abundance, x: collection site, dot plot + boxplot
 bacillota_phylum_site <- 
   phylum_df %>%
   dplyr::filter(Phylum == "Bacillota",`collection.day.post.admission`=="day-0") %>%
@@ -250,10 +237,9 @@ bacillota_phylum_site <-
   scale_fill_manual(values = colors) + 
     theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
           legend.position = "right")
-# Statistically: Kruskall-Wallis followed by a Tukey's Posthoc test
-# These are non-parametric (non-normal) stat tests 
 
-# Actinomycetota - y: abundance, x: collection day, dot plot + boxplot
+
+# Bacillota - y: abundance, x: collection day, dot plot + boxplot
 bacillota_phylum_day <- 
   phylum_df %>%
   dplyr::filter(Phylum == "Bacillota", env_local_scale=="burn") %>%
@@ -267,8 +253,7 @@ bacillota_phylum_day <-
   scale_fill_manual(values = colors) + 
     theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
           legend.position = "right")
-# Statistically: Kruskall-Wallis followed by a Tukey's Posthoc test
-# These are non-parametric (non-normal) stat tests 
+
 
 
 bacillota_phylum_site + bacillota_phylum_day + 
@@ -280,7 +265,7 @@ bacillota_phylum_site + bacillota_phylum_day +
 
 ```{r phylum-bactero, fig.width=7, fig.height=3.5}
 # Narrow in on a specific group
-# Actinomycetota - y: abundance, x: collection site, dot plot + boxplot
+# Bacteroidota - y: abundance, x: collection site, dot plot + boxplot
 Bacteroidota_phylum_site <- 
   phylum_df %>%
   dplyr::filter(Phylum == "Bacteroidota",`collection.day.post.admission`=="day-0") %>%
@@ -294,10 +279,9 @@ Bacteroidota_phylum_site <-
   scale_fill_manual(values = colors) + 
     theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
           legend.position = "right")
-# Statistically: Kruskall-Wallis followed by a Tukey's Posthoc test
-# These are non-parametric (non-normal) stat tests 
 
-# Actinomycetota - y: abundance, x: collection day, dot plot + boxplot
+
+# Bacteroidota - y: abundance, x: collection day, dot plot + boxplot
 Bacteroidota_phylum_day <- 
   phylum_df %>%
   dplyr::filter(Phylum == "Bacteroidota", env_local_scale=="burn") %>%
@@ -311,8 +295,6 @@ Bacteroidota_phylum_day <-
   scale_fill_manual(values = colors) + 
     theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
           legend.position = "right")
-# Statistically: Kruskall-Wallis followed by a Tukey's Posthoc test
-# These are non-parametric (non-normal) stat tests 
 
 
 Bacteroidota_phylum_site + Bacteroidota_phylum_day + 
@@ -324,7 +306,7 @@ Bacteroidota_phylum_site + Bacteroidota_phylum_day +
 
 ```{r phylum-pseudo, fig.width=7, fig.height=3.5}
 # Narrow in on a specific group
-# Actinomycetota - y: abundance, x: collection site, dot plot + boxplot
+# Pseudomonadota - y: abundance, x: collection site, dot plot + boxplot
 Pseudomonadota_phylum_site <- 
   phylum_df %>%
   dplyr::filter(Phylum == "Pseudomonadota",`collection.day.post.admission`=="day-0") %>%
@@ -338,10 +320,9 @@ Pseudomonadota_phylum_site <-
   scale_fill_manual(values = colors) + 
     theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
           legend.position = "right")
-# Statistically: Kruskall-Wallis followed by a Tukey's Posthoc test
-# These are non-parametric (non-normal) stat tests 
 
-# Actinomycetota - y: abundance, x: collection day, dot plot + boxplot
+
+# Pseudomonadota - y: abundance, x: collection day, dot plot + boxplot
 Pseudomonadota_phylum_day <- 
   phylum_df %>%
   dplyr::filter(Phylum == "Pseudomonadota", env_local_scale=="burn") %>%
@@ -355,8 +336,6 @@ Pseudomonadota_phylum_day <-
   scale_fill_manual(values = colors) + 
     theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
           legend.position = "right")
-# Statistically: Kruskall-Wallis followed by a Tukey's Posthoc test
-# These are non-parametric (non-normal) stat tests 
 
 
 Pseudomonadota_phylum_site + Pseudomonadota_phylum_day + 
@@ -549,7 +528,7 @@ Bacillota_genus_day <-
 
 Bacillota_genus_day
 
-# Collect the Actinomycetota Plots
+# Collect the Plots
 Bacillota_genus_site / Bacillota_genus_day + 
   plot_layout(guides = "collect") +
   plot_annotation(tag_levels = "A")
