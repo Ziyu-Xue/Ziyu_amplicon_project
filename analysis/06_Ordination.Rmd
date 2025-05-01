@@ -224,6 +224,7 @@ scaledSeq_histogram + scaledSeq_vs_numASV_plot +
   plot_annotation(tag_levels = "A")
 ```
 
+
 <span style="color: red;">INTERPRETATION #3:  Evaluate the scaled read count plots above. Are the total number of sequences across all of your samples in the same general range? What is the minimum and maximum (i.e., the range) of the sequencing depth? How was the relationship with the number of ASVs modified after scaling the read counts?</span>
 
 Yes they are now in the same general range. Read counts are now between 1257-1351. There used to be a positive correlation between num of ASVs and the seq depth, but now seq depth stays around the same across different numbers of ASVs.
@@ -255,6 +256,22 @@ scaled_wUnifrac_dist <- phyloseq::distance(scaled_physeq, method = "wunifrac")
 
 Sorensen is the most relevant.I would like to know if more species are present/acquired over the days post admission and sorensen focuses on the presence/absence of species regardless of abundance. Unifrac is less relevant because I do not care about the phylogeny of species.
 
+### Bray-Curtis
+
+```{r PERMANOVA-categorical-bray}
+# Bray-Curtis
+## ALWAYS check and confirm the order of your terms and how they interact with each other.  
+bray_station_adonis_terms1 <- adonis2(scaled_bray_dist ~  `collection.day.post.admission` * `env_local_scale`, data = metadata_df, by = "terms")
+bray_station_adonis_terms1
+
+bray_station_adonis_terms2 <- adonis2(scaled_bray_dist ~ `env_local_scale` * `collection.day.post.admission`, data = metadata_df, by = "terms")
+bray_station_adonis_terms2
+
+
+## 2. Run with by = "margin" for marginal p-values
+bray_station_adonis_margin <- adonis2(scaled_bray_dist ~ `env_local_scale` * `collection.day.post.admission`, data = metadata_df, by = "margin")
+bray_station_adonis_margin
+```
 
 ### Sorensen
 
@@ -433,6 +450,14 @@ PCoA works better for my data in general since it gives clearer clustering. NMDS
 # Now what? 
 
 Based on the results above, which metric would you use to write up your paper: Sorensen or Bray-Curtis? 
+
+
+```{r save-phyloseq-object}
+
+# Now, save midpoint rooted phyloseq object
+save(scaled_physeq, 
+     file = "data/06_Ordination/scaled_physeq.RData")
+```
 
 # Final info for Reproducibility 
 
